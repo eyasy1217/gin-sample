@@ -1,4 +1,4 @@
-```script
+```bash
 # goインストール
 brew install go
 # バージョン確認
