@@ -5,7 +5,7 @@ brew install go
 go version
 
 # sqlite3インストール
-brew install sqllite3
+brew install sqlite3
 # バージョン確認
 sqlite3 -version
 
