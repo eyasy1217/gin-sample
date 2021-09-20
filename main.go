@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"log"
 
 	"github.com/gin-gonic/gin"
 
@@ -14,7 +15,7 @@ func main() {
 	router.LoadHTMLGlob("templates/*.html")
 
 	router.GET("/", func(ctx *gin.Context) {
-		ctx.HTML(200, "login.html", gin.H{})
+		ctx.HTML(200, "login.html", gin.H{"e": false})
 	})
 
 	router.POST("/login", func(ctx *gin.Context) {
@@ -25,17 +26,27 @@ func main() {
 		// sqlite3データベースの読み込み
 		db, _ := sql.Open("sqlite3", "sample.db")
 
-		// データベース問い合わせ
-		row := db.QueryRow("SELECT fullname FROM sample_user WHERE email = ? and password = ?;", email, password)
-
 		// 問い合わせ結果を入れる箱を用意
 		var fullname string
 
-		row.Scan(&fullname)
+		// データベース問い合わせ
+		row := db.QueryRow("SELECT fullname FROM sample_user WHERE email = ? and password = ?;", email, password)
 
 		defer db.Close()
 
-		ctx.HTML(200, "home.html", gin.H{"fullname": fullname})
+		err := row.Scan(&fullname)
+
+		if err == nil {
+			ctx.HTML(200, "home.html", gin.H{"fullname": fullname})
+		} else {
+			// データがなかったら
+			if err == sql.ErrNoRows {
+				ctx.HTML(200, "login.html", gin.H{"e": true})
+				// それ以外のエラー
+			} else {
+				log.Println(err)
+			}
+		}
 	})
 
 	router.Run()
